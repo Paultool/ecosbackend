@@ -1,41 +1,35 @@
-# Use the official PHP image as the base image
-FROM php:7.4-fpm
+# Usa la imagen oficial de PHP como base
+FROM php:8.1-fpm
 
-# Set working directory
+# Establecer el directorio de trabajo
 WORKDIR /var/www
 
-# Install dependencies
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    libpq-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    locales \
+    libzip-dev \
     zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
-    unzip \
-    git \
-    curl
+    unzip
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Instalar extensiones de PHP necesarias
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
-
-# Get latest Composer
+# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy existing application directory contents
-COPY . /var/www
+# Copiar el contenido del proyecto al contenedor
+COPY . .
 
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www
+# Establecer permisos
+RUN chown -R www-data:www-data /var/www
 
-# Change current user to www
-USER www-data
+# Instalar dependencias de PHP
+RUN composer install
 
-# Expose port 9000 and start php-fpm server
+# Exponer el puerto 9000 y ejecutar PHP-FPM
 EXPOSE 9000
 CMD ["php-fpm"]
