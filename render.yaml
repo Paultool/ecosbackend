@@ -1,0 +1,16 @@
+# render.yaml
+
+# Versión de la configuración de Render
+version: 1
+
+services:
+  - name: web
+    buildCommand: npm install --production
+    startCommand: npm start
+    env:
+      NODE_ENV: production
+    healthCheckPath: /
+
+# Configuración de red y puertos
+ports:
+  - 80
