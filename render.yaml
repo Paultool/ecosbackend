@@ -1,7 +1,7 @@
 # render.yaml
 
 # Versión de la configuración de Render
-version: 1
+version: 1.1
 
 services:
   - name: web
@@ -10,7 +10,6 @@ services:
     env:
       NODE_ENV: production
     healthCheckPath: /
-
-# Configuración de red y puertos
-ports:
-  - 80
+    logConfig:
+      level: debug
+      destination: file
