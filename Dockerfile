@@ -1,6 +1,5 @@
 # Usa la imagen oficial de PHP como base
-FROM php:8.2-cli
-
+FROM php:8.1-fpm
 
 # Establecer el directorio de trabajo
 WORKDIR /var/www
