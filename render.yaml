@@ -12,4 +12,4 @@ services:
     healthCheckPath: /
     logConfig:
       level: debug
-      destination: file
+      destination: console
