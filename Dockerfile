@@ -40,5 +40,5 @@ COPY ./docker/php-fpm.d/zzz-www.conf /usr/local/etc/php-fpm.d/zzz-www.conf
 #RUN php artisan migrate:fresh --seed
 
 # Exponer el puerto 9000 y ejecutar PHP-FPM
-EXPOSE 9000
+#EXPOSE 9000
 CMD ["php-fpm"]
