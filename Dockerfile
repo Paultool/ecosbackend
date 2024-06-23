@@ -1,12 +1,8 @@
-# Usa la imagen oficial de PHP como base
-FROM php:8.1-fpm
+# Usa la imagen base oficial de PHP con Apache
+FROM php:8.1-apache
 
-# Establecer el directorio de trabajo
-WORKDIR /var/www
-
-# Actualizar y instalar dependencias del sistema
-RUN apt-get update && \
-    apt-get install -y \
+# Instala las dependencias del sistema
+RUN apt-get update && apt-get install -y \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
@@ -14,38 +10,32 @@ RUN apt-get update && \
     libzip-dev \
     zip \
     unzip \
-    git
+    git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo_pgsql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
 
-# Instalar las extensiones PHP una por una
-RUN docker-php-ext-install pdo_pgsql
-RUN docker-php-ext-install mbstring
-RUN docker-php-ext-install exif
-RUN docker-php-ext-install pcntl
-RUN docker-php-ext-install bcmath
-RUN docker-php-ext-install zip
+# Habilita el módulo de reescritura de Apache
+RUN a2enmod rewrite
 
-# Configurar y instalar GD
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd
+# Copia el código de la aplicación al contenedor
+COPY . /var/www/html
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Establece el directorio de trabajo
+WORKDIR /var/www/html
 
-# Copiar el contenido del proyecto al contenedor
-COPY . .
+# Configura el propietario de los archivos
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Establecer permisos
-RUN chown -R www-data:www-data /var/www
+# Exponer el puerto
+EXPOSE 80
 
-# Instalar dependencias de PHP
-RUN composer install --no-dev --optimize-autoloader
-
-# Copiar el archivo de configuración de PHP-FPM
-COPY ./docker/php-fpm.d/zzz-www.conf /usr/local/etc/php-fpm.d/zzz-www.conf
-
-# Ejecutar migraciones y seeders
-RUN php artisan migrate:fresh --seed
-
-# Exponer el puerto 9000 y ejecutar PHP-FPM
-EXPOSE 9000
-CMD ["php-fpm"]
+# Comando para iniciar Apache
+CMD ["apache2-foreground"]
