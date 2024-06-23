@@ -12,9 +12,11 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git
 
-# Configura e instala las extensiones de PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+# Configura e instala las extensiones de PHP GD
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+# Instala las extensiones de PHP
+RUN docker-php-ext-install -j$(nproc) \
     pdo_pgsql \
     mbstring \
     exif \
