@@ -13,8 +13,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_pgsql
+    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -26,10 +27,13 @@ COPY . .
 RUN chown -R www-data:www-data /var/www
 
 # Instalar dependencias de PHP
-RUN composer install
+RUN composer install --no-dev --optimize-autoloader
+
+# Copiar el archivo de entrada de PHP-FPM para Laravel (opcional)
+COPY ./docker/php-fpm.d/zzz-www.conf /usr/local/etc/php-fpm.d/zzz-www.conf
 
 # Ejecutar migraciones y seeders
-RUN php artisan migrate:fresh --seed || true
+RUN php artisan migrate:fresh --seed
 
 # Exponer el puerto 9000 y ejecutar PHP-FPM
 EXPOSE 9000
