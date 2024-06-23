@@ -18,7 +18,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 # Instala las extensiones de PHP
 RUN docker-php-ext-install -j$(nproc) \
     pdo_pgsql \
-    mbstring \
     exif \
     pcntl \
     bcmath \
