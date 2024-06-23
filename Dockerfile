@@ -4,8 +4,9 @@ FROM php:8.1-fpm
 # Establecer el directorio de trabajo
 WORKDIR /var/www
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# Actualizar y instalar dependencias del sistema
+RUN apt-get update && \
+    apt-get install -y \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
@@ -13,9 +14,13 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip
+    git
+
+# Configurar y habilitar extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd
+
+RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath zip
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -29,7 +34,7 @@ RUN chown -R www-data:www-data /var/www
 # Instalar dependencias de PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Copiar el archivo de entrada de PHP-FPM para Laravel (opcional)
+# Copiar el archivo de configuración de PHP-FPM
 COPY ./docker/php-fpm.d/zzz-www.conf /usr/local/etc/php-fpm.d/zzz-www.conf
 
 # Ejecutar migraciones y seeders
