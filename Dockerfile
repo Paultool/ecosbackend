@@ -14,12 +14,19 @@ RUN apt-get update && \
     libzip-dev \
     zip \
     unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
+    git
 
-# Instalar las extensiones PHP
-RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath zip
+# Instalar las extensiones PHP una por una
+RUN docker-php-ext-install pdo_pgsql
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install exif
+RUN docker-php-ext-install pcntl
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install zip
+
+# Configurar y instalar GD
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
