@@ -1,8 +1,12 @@
-# Usa la imagen base oficial de PHP con Apache
-FROM php:8.1-apache
+# Usa la imagen oficial de PHP como base
+FROM php:8.1-fpm
 
-# Actualiza los repositorios y instala las dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# Establecer el directorio de trabajo
+WORKDIR /var/www
+
+# Actualizar y instalar dependencias del sistema
+RUN apt-get update && \
+    apt-get install -y \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
@@ -10,35 +14,31 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
-    git
+    git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd
 
-# Configura e instala las extensiones de PHP GD
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+# Instalar las extensiones PHP
+RUN docker-php-ext-install pdo_pgsql exif pcntl bcmath zip
 
-# Instala las extensiones de PHP
-RUN docker-php-ext-install -j$(nproc) \
-    pdo_pgsql \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Habilita el módulo de reescritura de Apache
-RUN a2enmod rewrite
+# Copiar el contenido del proyecto al contenedor
+COPY . .
 
-# Copia el código de la aplicación al contenedor
-COPY . /var/www/html
+# Establecer permisos
+RUN chown -R www-data:www-data /var/www
 
-# Establece el directorio de trabajo
-WORKDIR /var/www/html
+# Instalar dependencias de PHP
+RUN composer install --no-dev --optimize-autoloader
 
-# Configura el propietario de los archivos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Copiar el archivo de configuración de PHP-FPM
+COPY ./docker/php-fpm.d/zzz-www.conf /usr/local/etc/php-fpm.d/zzz-www.conf
 
-# Exponer el puerto
-EXPOSE 80
+# Ejecutar migraciones y seeders
+RUN php artisan migrate:fresh --seed
 
-# Comando para iniciar Apache
-CMD ["apache2-foreground"]
+# Exponer el puerto 9000 y ejecutar PHP-FPM
+EXPOSE 9000
+CMD ["php-fpm"]
