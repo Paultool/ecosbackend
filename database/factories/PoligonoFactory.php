@@ -15,9 +15,7 @@ class PoligonoFactory extends Factory
         return [
             'nombre' => $this->faker->word,
             'coordenadas' => json_encode([
-                ['lat' => $this->faker->latitude, 'lng' => $this->faker->longitude],
-                ['lat' => $this->faker->latitude, 'lng' => $this->faker->longitude],
-                ['lat' => $this->faker->latitude, 'lng' => $this->faker->longitude],
+                ['lat' => $this->faker->latitude, 'lng' => $this->faker->longitude],             
             ]),
             'escena_id' => Escena::factory(),
             'descripcion' => $this->faker->sentence,
