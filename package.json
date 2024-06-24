@@ -11,6 +11,10 @@
         "vite": "^5.0.0"
     },
     "dependencies": {
-        "docker": "^1.0.0"
+        "@vitejs/plugin-vue": "^5.0.5",
+        "@vue/compiler-sfc": "^3.4.30",
+        "docker": "^0.2.14",
+        "vue": "^3.4.30",
+        "vue-loader": "^17.3.1"
     }
 }
